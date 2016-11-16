@@ -8,20 +8,61 @@
 
 #import "ViewController.h"
 
-@interface ViewController ()
-
-@end
-
 @implementation ViewController
 
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
     [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
+    self.mapView.delegate = self;
+    
+    CLLocationCoordinate2D sourceLocation = CLLocationCoordinate2DMake(40.759011, -73.984472);
+    CLLocationCoordinate2D destinationLocation = CLLocationCoordinate2DMake(40.748441, -73.985564);
+    
+    MKPlacemark *sourcePlacemark = [[MKPlacemark alloc]initWithCoordinate:sourceLocation addressDictionary:nil];
+    MKPlacemark *destnationPlacemark = [[MKPlacemark alloc]initWithCoordinate:destinationLocation addressDictionary:nil];
+    
+    MKMapItem *sourceMapItem = [[MKMapItem alloc]initWithPlacemark:sourcePlacemark];
+    MKMapItem *destinaionMapItem = [[MKMapItem alloc]initWithPlacemark:destnationPlacemark];
+    
+    MKDirectionsRequest *request = [[MKDirectionsRequest alloc]init];
+    request.source = sourceMapItem;
+    request.destination = destinaionMapItem;
+    request.transportType = MKDirectionsTransportTypeAutomobile;
+    
+    MKDirections *directions = [[MKDirections alloc]initWithRequest:request];
+    [directions calculateDirectionsWithCompletionHandler:^(MKDirectionsResponse * _Nullable response, NSError * _Nullable error)
+     {
+         if (error)
+         {
+             NSLog(@"Could not fetch directions- %@", error);
+         }
+         else
+         {
+             for (MKRoute *route in response.routes)
+             {
+                 [self.mapView addOverlay:route.polyline level:MKOverlayLevelAboveRoads];
+                 
+                 MKMapRect frame = route.polyline.boundingMapRect;
+                 [self.mapView setRegion:MKCoordinateRegionForMapRect(frame)];
+                 
+                 NSLog(@"Route Instructions-\n");
+                 for (MKRouteStep *step in route.steps)
+                 {
+                     NSLog(@"%@", step.instructions);
+                 }
+             }
+         }
+     }];
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+#pragma mark - MapKit Delegate
+- (MKOverlayRenderer *)mapView:(MKMapView *)mapView rendererForOverlay:(id < MKOverlay >)overlay
+{
+    MKPolylineRenderer *renderer = [[MKPolylineRenderer alloc] initWithOverlay:overlay];
+    renderer.strokeColor = [UIColor redColor];
+    renderer.lineWidth = 5.0;
+    return renderer;
 }
+
 
 @end
