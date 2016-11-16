@@ -53,6 +53,17 @@
              }
          }
      }];
+   
+    // Show Annotations
+    MKPointAnnotation *sourceAnnotation = [[MKPointAnnotation alloc]init];
+    sourceAnnotation.title = @"Times Square";
+    sourceAnnotation.coordinate = sourceLocation;
+    
+    MKPointAnnotation *destinationAnnotation = [[MKPointAnnotation alloc]init];
+    destinationAnnotation.title = @"Empire State Building";
+    sourceAnnotation.coordinate = destinationLocation;
+    
+    [self.mapView showAnnotations:@[sourceAnnotation, destinationAnnotation] animated:YES];
 }
 
 #pragma mark - MapKit Delegate
